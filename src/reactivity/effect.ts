@@ -1,4 +1,6 @@
 import { extend } from "./shared/index"
+let activeEffect
+let sholdTrack = false
 
 // class reactiveEffect 
 class reactiveEffect {
@@ -13,8 +15,17 @@ class reactiveEffect {
     }
 
     run() {
+        if(!this.active) {
+            return this._fn()
+        }
+        // effect.spec.ts it("stop", () => { obj.prop++ })
+        // 当使用obj.prop++ 会出发obj.prop的get,又会收集依赖，但是stop之后不应该再次收集依赖，如果收集就会在SET时候出发依赖，也就是只有在effect中的Fn执行时，才要收集依赖，
+        // 当执行run方法才把收集依赖开关打开，即sholdTrack=true，收集完依赖就关掉，这样就实现只在run方法调用get操作才收集依赖
         activeEffect = this
-        return this._fn()
+        sholdTrack = true
+        const _res = this._fn()
+        sholdTrack = false
+        return _res
     }
 
     stop() {
@@ -37,7 +48,14 @@ function cleanupEffect(effect) {
 
 const targetMap = new Map()
 
+function trackking() {
+    return activeEffect !== undefined && sholdTrack
+}
+
 export function track(target, key) {
+    // if(!trackking()) return 
+    if(!activeEffect) return
+    if(!sholdTrack) return
     let depsMap = targetMap.get(target)
     if(!depsMap) {
         depsMap = new Map()
@@ -48,7 +66,6 @@ export function track(target, key) {
         depMap = new Set()
         depsMap.set(key, depMap)
     }
-    if(!activeEffect) return
     depMap.add(activeEffect)
     // 反向记录，如stop的时候，用activeEffect删除depMap里的它
     activeEffect.deps.push(depMap)
@@ -70,7 +87,6 @@ export function stop(runner) {
     runner.effect.stop()
 }
 
-let activeEffect
 export function effect(fn, options:any={}) {
     const scheduler = options.scheduler
     const _effect = new reactiveEffect(fn, scheduler)
