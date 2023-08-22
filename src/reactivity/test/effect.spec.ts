@@ -67,6 +67,7 @@ describe('effect', () => {
       expect(dummy).toBe(2);
       stop(runner);
       // obj.prop = 3;
+      // 当使用obj.prop++ 会出发obj.prop的get,又会收集依赖，但是stop之后不应该再次收集依赖，如果收集就会在SET时候出发依赖，也就是只有在effect中的Fn执行时，才要收集依赖，
       obj.prop++;
       expect(dummy).toBe(2);
   

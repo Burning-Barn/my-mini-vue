@@ -1,11 +1,13 @@
 import { track, trigger } from "./effect"
-import { reactiveFlags } from "./reactive"
+import { reactive, reactiveFlags, readonly } from "./reactive"
+import { isObject } from "./shared"
 
 const get = createGetter()
 const set = createSetter()
 const readonlyGet = createGetter(true)
+const shallowReadonlyGet = createGetter(true, true)
 
-export function createGetter(isReadonly=false) {
+export function createGetter(isReadonly=false, isShollow=false) {
     return function get(target, key) {
         const _vlaue = Reflect.get(target, key)
         if(!isReadonly && key === reactiveFlags.IS_REACTIVE) {
@@ -13,6 +15,14 @@ export function createGetter(isReadonly=false) {
             // return !isReadonly   
         } else if(isReadonly && key === reactiveFlags.IS_READONLY ) {
             return true
+        }
+
+        if(isShollow) {
+            return _vlaue
+        }
+
+        if(isObject(_vlaue)) {
+            return isReadonly ? readonly(_vlaue) : reactive(_vlaue)
         }
 
         if (!isReadonly) {
@@ -42,6 +52,16 @@ export function mutableHandlers() {
 export function readonlyHandlers() {
     return {
         get: readonlyGet,
+        set(target, key, value):any {
+            console.warn(`${String(key)}不可更改，因为${target}是只读的。`)
+            return true
+        } 
+    }
+}
+
+export function shallowReadonlyHandlers() {
+    return {
+        get: shallowReadonlyGet,
         set(target, key, value):any {
             console.warn(`${String(key)}不可更改，因为${target}是只读的。`)
             return true
