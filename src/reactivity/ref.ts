@@ -51,6 +51,16 @@ export function unRef(value) {
     return isRef(value) ? value.value : value
 }
 
+// const user = {
+//     age: ref(10),
+//     name: "xiaohong",
+//   };
+
+//   const proxyUser = proxyRefs(user);
+  
+//   expect(user.age.value).toBe(10);
+//   expect(proxyUser.age).toBe(10);
+// return 出来的ref 在模板中解开
 export function proxyRefs(raw) {
     return new Proxy(raw, {
         get(target, key) {

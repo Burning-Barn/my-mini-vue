@@ -2,8 +2,8 @@ import { extend } from "./shared/index"
 let activeEffect
 let sholdTrack = false
 
-// class reactiveEffect 
-class reactiveEffect {
+// class ReactiveEffect 
+export class ReactiveEffect {
     private _fn
     deps: Array<Set<any>> = []
     active = true
@@ -107,7 +107,7 @@ export function stop(runner) {
 
 export function effect(fn, options:any={}) {
     const scheduler = options.scheduler
-    const _effect = new reactiveEffect(fn, scheduler)
+    const _effect = new ReactiveEffect(fn, scheduler)
     // options
     // Object.assign(_effect, options)
     extend(_effect, options)
