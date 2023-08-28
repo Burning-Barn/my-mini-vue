@@ -1,12 +1,17 @@
 {
   "name": "my-mini-vue",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/my-mini-vue.cjs.js",
+  "module": "lib/my-mini-vue.esm.js",
   "license": "MIT",
+  "type": "module",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "rollup -c rollup.config.js", 
+    "server": "live-server ./ --port=8080" 
   },
   "dependencies": {
+    "@rollup/plugin-typescript": "^11.1.2",
     "@types/jest": "^29.5.3",
     "jest": "^29.6.2",
     "typescript": "^5.1.6"
@@ -15,6 +20,8 @@
     "@babel/core": "^7.22.10",
     "@babel/preset-env": "^7.22.10",
     "@babel/preset-typescript": "^7.22.5",
-    "babel-jest": "^29.6.2"
+    "babel-jest": "^29.6.2",
+    "rollup": "^3.28.1",
+    "tslib": "^2.6.2"
   }
 }
