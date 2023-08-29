@@ -22,10 +22,7 @@ function setupStatefulComponent(instance: any) {
       const Component = instance.type
 
       //代理render中的属性加入setup返回值
-      const _target = {
-        _: instance
-      }
-      instance.proxy = new Proxy(_target, PublicInstanceProxyHandlers
+      instance.proxy = new Proxy({_: instance}, PublicInstanceProxyHandlers
         // {
         //     get(target, key) {
         //         const { setupState } = instance

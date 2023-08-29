@@ -1,4 +1,5 @@
 import { isObject } from "../reactivity/shared/index"
+import { ShapeFlags } from "../shared/shapeFlags"
 import { createComponentInstance, setupComponent } from "./component"
 
 export function render(vnode, container) {
@@ -11,10 +12,12 @@ function patch(vonde, container) {
     // 判断vnode是不是element还是component
     console.log('vnode', vonde)
     const {type} = vonde
-    if(isObject(type)) {
+    if(ShapeFlags.STATEFUL_COMPONENT & vonde.shapeFlags) {
+    // if(isObject(type)) {
         // 是对象就是component
         processComponent(vonde, container)
-    } else if(typeof type === 'string') {
+    } else if(ShapeFlags.ELEMENT & vonde.shapeFlags) {
+    // } else if(typeof type === 'string') {
         // 是字符串就是element
         processElemnet(vonde, container)
     }
@@ -28,17 +31,24 @@ function processElemnet(vonde, container) {
 function mountElement(vonde, container) {
     const { type, children, props } = vonde
     const el = (vonde.el = document.createElement(type))
-
+    const isOn = (key:string) => /^on[A-Z]/.test(key) 
     for (const key in props) {
-        el.setAttribute(key, props[key])
+        const _val = props[key]
+        if(isOn(key)) {
+            el.addEventListener(key.slice(2).toLocaleLowerCase(), _val)
+        } else {
+            el.setAttribute(key, _val)
+        }
     }
 
-    if(Array.isArray(children)) {
+    if(vonde.shapeFlags & ShapeFlags.ARRAY_CHILDREN) {
+    // if(Array.isArray(children)) {
         children.forEach(child => {
             patch(child, el)
         })
         // moutChildren(vnode, el)
-    } else if(typeof children === 'string') {
+    } else if(vonde.shapeFlags & ShapeFlags.TEXT_CHILDREN) {
+    // } else if(typeof children === 'string') {
         el.textContent = children
     }
     container.append(el)
