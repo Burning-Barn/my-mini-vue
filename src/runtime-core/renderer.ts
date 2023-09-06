@@ -1,6 +1,7 @@
 import { isObject } from "../reactivity/shared/index"
 import { ShapeFlags } from "../shared/shapeFlags"
 import { createComponentInstance, setupComponent } from "./component"
+import { Fragment, Text } from "./vonde"
 
 export function render(vnode, container) {
     // 调用patch
@@ -12,16 +13,37 @@ function patch(vonde, container) {
     // 判断vnode是不是element还是component
     console.log('vnode', vonde)
     const {type} = vonde
-    if(ShapeFlags.STATEFUL_COMPONENT & vonde.shapeFlags) {
-    // if(isObject(type)) {
-        // 是对象就是component
-        processComponent(vonde, container)
-    } else if(ShapeFlags.ELEMENT & vonde.shapeFlags) {
-    // } else if(typeof type === 'string') {
-        // 是字符串就是element
-        processElemnet(vonde, container)
-    }
+    switch (type) {
+        case Fragment:
+            processFragment(vonde, container)
+            break;
 
+        case Text:
+            processTextNode(vonde, container)
+            break;
+    
+        default:
+            if(ShapeFlags.STATEFUL_COMPONENT & vonde.shapeFlags) {
+            // if(isObject(type)) {
+                // 是对象就是component
+                processComponent(vonde, container)
+            } else if(ShapeFlags.ELEMENT & vonde.shapeFlags) {
+            // } else if(typeof type === 'string') {
+                // 是字符串就是element
+                processElemnet(vonde, container)
+            }
+            break;
+    }
+}
+
+function processFragment(vnode, container) {
+    children(vnode, container)
+}
+
+function processTextNode(vonde, container) {
+    const { children } = vonde
+    const _children = (vonde.el = document.createTextNode(children))
+    container.append(_children)
 }
 
 function processElemnet(vonde, container) {
@@ -54,7 +76,7 @@ function mountElement(vonde, container) {
     container.append(el)
 }
 
-function moutChildren(vonde, container) {
+function children(vonde, container) {
     vonde.children.forEach(child => {
         patch(child, container)
     })

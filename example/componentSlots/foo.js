@@ -14,19 +14,19 @@ export const Foo = {
         // )
         
         // 3具名插槽     
-        return h(
-            'div',
-            {},
-            [renderSlots(this.$slots, 'header'),foo, renderSlots(this.$slots, 'footer')]
-        )
-
-        // 4作用域插槽 
-        // const age = 28
         // return h(
         //     'div',
         //     {},
-        //     [renderSlots(this.$slots, 'header', age),foo, renderSlots(this.$slots, 'footer')]
+        //     [renderSlots(this.$slots, 'header'),foo, renderSlots(this.$slots, 'footer')]
         // )
+
+        // 4作用域插槽 
+        const age = 28
+        return h(
+            'div',
+            {},
+            [renderSlots(this.$slots, 'header', {age}), foo, renderSlots(this.$slots, 'footer')]
+        )
     },
     setup(props, {emit}) {
         return {  }

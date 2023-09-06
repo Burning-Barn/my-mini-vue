@@ -1,12 +1,10 @@
-import { createVnode } from "../vonde";
+import { Fragment, createVnode } from "../vonde";
 
-export function renderSlots(slot, name, val) {
-    // return createVnode('div', {}, slot)
+export function renderSlots(slot, name, props) {
     const _slot = slot[name]
     if(_slot) {
-        return createVnode('div', {}, _slot)
+        if(typeof _slot === 'function') {
+            return createVnode(Fragment, {}, _slot(props))
+        }
     }
-    // if(_slot && typeof _slot === 'function') {
-    //     return createVnode('div', {}, _slot(val))
-    // }
 }
