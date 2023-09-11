@@ -5,52 +5,52 @@ import { Fragment, Text } from "./vonde"
 
 export function render(vnode, container) {
     // 调用patch
-    patch(vnode, container)
+    patch(vnode, container, null)
 }
 
-function patch(vonde, container) {
+function patch(vonde, container, parent) {
     // 处理组件，
     // 判断vnode是不是element还是component
     console.log('vnode', vonde)
     const {type} = vonde
     switch (type) {
         case Fragment:
-            processFragment(vonde, container)
+            processFragment(vonde, container, parent)
             break;
 
         case Text:
-            processTextNode(vonde, container)
+            processTextNode(vonde, container, parent)
             break;
     
         default:
             if(ShapeFlags.STATEFUL_COMPONENT & vonde.shapeFlags) {
             // if(isObject(type)) {
                 // 是对象就是component
-                processComponent(vonde, container)
+                processComponent(vonde, container, parent)
             } else if(ShapeFlags.ELEMENT & vonde.shapeFlags) {
             // } else if(typeof type === 'string') {
                 // 是字符串就是element
-                processElemnet(vonde, container)
+                processElemnet(vonde, container, parent)
             }
             break;
     }
 }
 
-function processFragment(vnode, container) {
-    children(vnode, container)
+function processFragment(vnode, container, parent) {
+    children(vnode, container, parent)
 }
 
-function processTextNode(vonde, container) {
+function processTextNode(vonde, container, parent) {
     const { children } = vonde
     const _children = (vonde.el = document.createTextNode(children))
     container.append(_children)
 }
 
-function processElemnet(vonde, container) {
-    mountElement(vonde, container)
+function processElemnet(vonde, container, parent) {
+    mountElement(vonde, container, parent)
 }
 
-function mountElement(vonde, container) {
+function mountElement(vonde, container, parent) {
     const { type, children, props } = vonde
     const el = (vonde.el = document.createElement(type))
     const isOn = (key:string) => /^on[A-Z]/.test(key) 
@@ -66,7 +66,7 @@ function mountElement(vonde, container) {
     if(vonde.shapeFlags & ShapeFlags.ARRAY_CHILDREN) {
     // if(Array.isArray(children)) {
         children.forEach(child => {
-            patch(child, el)
+            patch(child, el, parent)
         })
         // moutChildren(vnode, el)
     } else if(vonde.shapeFlags & ShapeFlags.TEXT_CHILDREN) {
@@ -76,18 +76,18 @@ function mountElement(vonde, container) {
     container.append(el)
 }
 
-function children(vonde, container) {
+function children(vonde, container, parent) {
     vonde.children.forEach(child => {
-        patch(child, container)
+        patch(child, container, parent)
     })
 }
 
-function processComponent(vnode, container) {
-    mountComponent(vnode, container)
+function processComponent(vnode, container, parent) {
+    mountComponent(vnode, container, parent)
 }
 
-function mountComponent(initialVnode, container) {
-    const instance = createComponentInstance(initialVnode)
+function mountComponent(initialVnode, container, parent) {
+    const instance = createComponentInstance(initialVnode, parent)
 
     setupComponent(instance)
 
@@ -100,7 +100,7 @@ function setupRenderEffect(instance,initialVnode, container) {
     // vnode  ---> patch
     // vnode  ---> element --> mountElemnt
 
-    patch(subTree, container)
+    patch(subTree, container, instance)
 
     initialVnode.el = subTree.el
 }
