@@ -1,4 +1,4 @@
-import { render } from "./renderer"
+import { _render } from "../runtime-dom/index"
 import { createVnode } from "./vonde"
 
 export function createApp(rootComponent) {
@@ -9,7 +9,7 @@ export function createApp(rootComponent) {
             // component ————> vonde
             const vnode = createVnode(rootComponent)
 
-            render(vnode, rootContainer)
+            _render(vnode, rootContainer)
         }
     }
 }

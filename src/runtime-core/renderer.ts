@@ -3,104 +3,126 @@ import { ShapeFlags } from "../shared/shapeFlags"
 import { createComponentInstance, setupComponent } from "./component"
 import { Fragment, Text } from "./vonde"
 
-export function render(vnode, container) {
-    // 调用patch
-    patch(vnode, container, null)
-}
+export function createRenderer(option) {
+    const {
+        createElement,
+        patchProps,
+        insert
+    } = option
 
-function patch(vonde, container, parent) {
-    // 处理组件，
-    // 判断vnode是不是element还是component
-    console.log('vnode', vonde)
-    const {type} = vonde
-    switch (type) {
-        case Fragment:
-            processFragment(vonde, container, parent)
-            break;
-
-        case Text:
-            processTextNode(vonde, container, parent)
-            break;
-    
-        default:
-            if(ShapeFlags.STATEFUL_COMPONENT & vonde.shapeFlags) {
-            // if(isObject(type)) {
-                // 是对象就是component
-                processComponent(vonde, container, parent)
-            } else if(ShapeFlags.ELEMENT & vonde.shapeFlags) {
-            // } else if(typeof type === 'string') {
-                // 是字符串就是element
-                processElemnet(vonde, container, parent)
-            }
-            break;
+    function render(vnode, container) {
+        // 调用patch
+        patch(vnode, container, null)
     }
-}
-
-function processFragment(vnode, container, parent) {
-    children(vnode, container, parent)
-}
-
-function processTextNode(vonde, container, parent) {
-    const { children } = vonde
-    const _children = (vonde.el = document.createTextNode(children))
-    container.append(_children)
-}
-
-function processElemnet(vonde, container, parent) {
-    mountElement(vonde, container, parent)
-}
-
-function mountElement(vonde, container, parent) {
-    const { type, children, props } = vonde
-    const el = (vonde.el = document.createElement(type))
-    const isOn = (key:string) => /^on[A-Z]/.test(key) 
-    for (const key in props) {
-        const _val = props[key]
-        if(isOn(key)) {
-            el.addEventListener(key.slice(2).toLocaleLowerCase(), _val)
-        } else {
-            el.setAttribute(key, _val)
+    
+    function patch(vonde, container, parent) {
+        // 处理组件，
+        // 判断vnode是不是element还是component
+        console.log('vnode', vonde)
+        const {type} = vonde
+        switch (type) {
+            case Fragment:
+                processFragment(vonde, container, parent)
+                break;
+    
+            case Text:
+                processTextNode(vonde, container, parent)
+                break;
+        
+            default:
+                if(ShapeFlags.STATEFUL_COMPONENT & vonde.shapeFlags) {
+                // if(isObject(type)) {
+                    // 是对象就是component
+                    processComponent(vonde, container, parent)
+                } else if(ShapeFlags.ELEMENT & vonde.shapeFlags) {
+                // } else if(typeof type === 'string') {
+                    // 是字符串就是element
+                    processElemnet(vonde, container, parent)
+                }
+                break;
         }
     }
-
-    if(vonde.shapeFlags & ShapeFlags.ARRAY_CHILDREN) {
-    // if(Array.isArray(children)) {
-        children.forEach(child => {
-            patch(child, el, parent)
-        })
-        // moutChildren(vnode, el)
-    } else if(vonde.shapeFlags & ShapeFlags.TEXT_CHILDREN) {
-    // } else if(typeof children === 'string') {
-        el.textContent = children
+    
+    function processFragment(vnode, container, parent) {
+        children(vnode, container, parent)
     }
-    container.append(el)
-}
+    
+    function processTextNode(vonde, container, parent) {
+        const { children } = vonde
+        const _children = (vonde.el = document.createTextNode(children))
+        container.append(_children)
+    }
+    
+    function processElemnet(vonde, container, parent) {
+        mountElement(vonde, container, parent)
+    }
+    
+    function mountElement(vonde, container, parent) {
+        const { type, children, props } = vonde
+        // 1、createElement
+        // const el = (vonde.el = document.createElement(type))
+        const el = (vonde.el = createElement(type))
 
-function children(vonde, container, parent) {
-    vonde.children.forEach(child => {
-        patch(child, container, parent)
-    })
-}
+        // 2、patchProps
+        // const isOn = (key:string) => /^on[A-Z]/.test(key) 
+        // for (const key in props) {
+        //     const _val = props[key]
+        //     if(isOn(key)) {
+        //         el.addEventListener(key.slice(2).toLocaleLowerCase(), _val)
+        //     } else {
+        //         el.setAttribute(key, _val)
+        //     }
+        // }
+        for (const key in props) {
+            const _val = props[key]
+            patchProps(el, key, _val)
+        }
+    
+        // 3、handle children
+        if(vonde.shapeFlags & ShapeFlags.ARRAY_CHILDREN) {
+        // if(Array.isArray(children)) {
+            children.forEach(child => {
+                patch(child, el, parent)
+            })
+            // moutChildren(vnode, el)
+        } else if(vonde.shapeFlags & ShapeFlags.TEXT_CHILDREN) {
+        // } else if(typeof children === 'string') {
+            el.textContent = children
+        }
 
-function processComponent(vnode, container, parent) {
-    mountComponent(vnode, container, parent)
-}
+        // 4、insert
+        // container.append(el)
+        insert(el, container)
+    }
+    
+    function children(vonde, container, parent) {
+        vonde.children.forEach(child => {
+            patch(child, container, parent)
+        })
+    }
+    
+    function processComponent(vnode, container, parent) {
+        mountComponent(vnode, container, parent)
+    }
+    
+    function mountComponent(initialVnode, container, parent) {
+        const instance = createComponentInstance(initialVnode, parent)
+    
+        setupComponent(instance)
+    
+        setupRenderEffect(instance, initialVnode, container)
+    }
+    
+    function setupRenderEffect(instance,initialVnode, container) {
+        const { proxy } = instance
+        const subTree = instance.render.call(proxy)
+        // vnode  ---> patch
+        // vnode  ---> element --> mountElemnt
+    
+        patch(subTree, container, instance)
+    
+        initialVnode.el = subTree.el
+    }
 
-function mountComponent(initialVnode, container, parent) {
-    const instance = createComponentInstance(initialVnode, parent)
-
-    setupComponent(instance)
-
-    setupRenderEffect(instance, initialVnode, container)
-}
-
-function setupRenderEffect(instance,initialVnode, container) {
-    const { proxy } = instance
-    const subTree = instance.render.call(proxy)
-    // vnode  ---> patch
-    // vnode  ---> element --> mountElemnt
-
-    patch(subTree, container, instance)
-
-    initialVnode.el = subTree.el
+    return render
 }

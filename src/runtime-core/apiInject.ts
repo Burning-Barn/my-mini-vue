@@ -18,11 +18,11 @@ export function provide(key, value) {
 export function inject(key, defaultVal) {
     const _currentInstance: any = getCurrentInstance()
     if(_currentInstance) {
-        const { parent } = _currentInstance
+        // const { parent } = _currentInstance
         const { provider: parentProvider } = _currentInstance.parent
 
         if(key in parentProvider) {
-            return parent.provider[key]
+            return parentProvider[key]
         } else if(defaultVal) {
             if(typeof defaultVal === 'function') {
                 return defaultVal()
