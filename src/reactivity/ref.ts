@@ -21,9 +21,9 @@ class RefImply {
 
     set value(newValue) {
         if(isChange(this._rawValue, newValue)) {
-            triggerEffect(this.dep)
             this._value = convert(newValue)
             this._rawValue = newValue
+            triggerEffect(this.dep)
         }
     }
 }
