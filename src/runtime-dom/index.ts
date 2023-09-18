@@ -17,8 +17,9 @@ export function patchProps(el, key, preVal, val) {
     }
 }
 
-export function insert(el, parent) {
-    parent.append(el)
+export function insert(el, parent, anchor) {
+    // parent.append(el)
+    parent.insertBefore(el, anchor || null)
 }
 
 export function unmountChilren(children) {
