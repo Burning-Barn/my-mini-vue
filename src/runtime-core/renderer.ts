@@ -90,7 +90,7 @@ export function createRenderer(option) {
     }
 
     function patchChilren(n1, n2, container, parent, anchor) {
-        debugger
+        // debugger
         const { shapeFlags: preShapeFlags, children: preChildren } = n1
         const { shapeFlags, children } = n2
         if (shapeFlags & ShapeFlags.TEXT_CHILDREN) {
@@ -201,6 +201,59 @@ export function createRenderer(option) {
                 i+=1
             }
         } else {
+            // 中间部分
+            // vue key的使用：
+            // 在diff对比时，需要遍历老节点，看每个老节点在nextVNode中是否存在，如果有key，可以直接遍历新节点做映射，在老节点中查找直接映射，为O(n)
+            // 但是，如果没有key值，每个老节点都要遍历一遍nextVnode为 O(n),
+            // 使用key,可以降低复杂度
+
+            // a,b,(c,d),f,g
+            // a,b,(e,c),f,g
+
+            // a,b,(c,e,d),f,g
+            // a,b,(e,c),f,g
+            const _preMiddleStart = e1 - i 
+            const _nextMiddleStart = e2 - i 
+
+            const _keyToNewIndexMap = new Map()
+
+            // 优化 引入变量，解决
+            // a,b,(c,e,d),f,g
+            // a,b,(e,c),f,g
+            // 当c,e,对比patch完成后，patch数量大于等于新节点middle中间值时，剩下的都是要删除的节点，直接删除，优化性能
+            let _patched = 0
+            let _middleCount = _nextMiddleStart + 1
+            
+            for (let n = i; n <= e2; n++) {
+                _keyToNewIndexMap.set(children[n].key, n)
+            }
+            
+            for (let p = i; p <= e1; p++) {
+                if(_patched >= _middleCount) {
+                    hostUnmountChilren(preChildren[p].el)
+                    continue
+                }
+
+                const _preC = preChildren[p];
+                let _newIndex
+                if(_preC.key !== null) {
+                    _newIndex = _keyToNewIndexMap.get(_preC.key)
+                } else {
+                    for (let j = i; j < e2; j++) {
+                        if(compareVnode(children[j], _preC)) {
+                            _newIndex = j
+                            break
+                        }
+                    }
+                }
+
+                if(_newIndex === undefined) {
+                    hostUnmountChilren(_preC.el)
+                } else {
+                    patch(_preC, children[_newIndex], container, parent, null)
+                    _patched+=1
+                }
+            }
 
         }
     }
