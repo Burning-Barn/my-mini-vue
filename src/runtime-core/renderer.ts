@@ -2,6 +2,7 @@ import { effect } from "../reactivity"
 import { isObject } from "../reactivity/shared/index"
 import { ShapeFlags } from "../shared/shapeFlags"
 import { createComponentInstance, setupComponent } from "./component"
+import { shouldComponentUpdate } from "./componentUpdateUtil"
 import { createAppApi } from "./createApp"
 import { Fragment, Text } from "./vonde"
 
@@ -384,11 +385,28 @@ export function createRenderer(option) {
     }
     
     function processComponent(n1, n2, container, parent, anchor) {
-        mountComponent(n2, container, parent, anchor)
+        if(!n1) {
+            mountComponent(n2, container, parent, anchor)
+        } else {
+            patchComponent(n1, n2, container, parent, anchor)
+        }
+    }
+
+    function patchComponent(n1, n2, container, parent, anchor) {
+        const instance = (n2.component = n1.component)
+        if(shouldComponentUpdate(n1.props, n2.props)) {
+            instance.next = n2
+            instance.update()
+
+        } else {
+            n2.el = n1.el
+            instance.vnode = n2
+        }
     }
     
     function mountComponent(initialVnode, container, parent, anchor) {
         const instance = createComponentInstance(initialVnode, parent)
+        initialVnode.component = instance
     
         setupComponent(instance)
     
@@ -397,7 +415,7 @@ export function createRenderer(option) {
     
     function setupRenderEffect(instance,initialVnode, container, anchor) {
 
-        effect(() => {   
+        instance.update = effect(() => {   
             if(!instance.isMounted) {
                 console.log('init')
                 const { proxy } = instance
@@ -409,7 +427,16 @@ export function createRenderer(option) {
                 initialVnode.el = subTree.el
             } else {
                 console.log('update')
-                const { proxy, subTree: prevSubTree } = instance
+                const { proxy, subTree: prevSubTree, next, vnode } = instance
+
+                if(next) {
+                    // 组件更新逻辑
+                    next.el = vnode.el
+                    instance.vnode = next
+                    instance.next = null
+                    instance.props = next.props
+                }
+
                 const subTree = instance.render.call(proxy)
 
                 console.log('prevSubTree', prevSubTree)
