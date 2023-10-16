@@ -4,6 +4,7 @@ import { ShapeFlags } from "../shared/shapeFlags"
 import { createComponentInstance, setupComponent } from "./component"
 import { shouldComponentUpdate } from "./componentUpdateUtil"
 import { createAppApi } from "./createApp"
+import { queueJobs } from "./scheduler"
 import { Fragment, Text } from "./vonde"
 
 export function createRenderer(option) {
@@ -128,7 +129,6 @@ export function createRenderer(option) {
         function compareVnode(v1, v2):boolean {
             return v1.type === v2.type && v1.key === v2.key
         }
-        debugger
         // 1、左侧对比
         // (a b) c
         // (a b) d e
@@ -444,6 +444,10 @@ export function createRenderer(option) {
                 instance.subTree = subTree
                 patch(prevSubTree, subTree, container, instance, anchor)
             } 
+        }, {
+            scheduler() {
+                queueJobs(instance.update)
+            }
         })
     }
 
