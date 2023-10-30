@@ -1,5 +1,6 @@
 import { NodeTypes } from "../src/ast";
 import { baseParse } from "../src/parse";
+import { finiteStateMachineTest } from "../src/test有限状态机";
 describe("Parse", () => {
   // 插值
   describe("interpolation", () => {
@@ -98,3 +99,13 @@ describe("Parse", () => {
   });
 
 });
+
+describe("test fsm", () => {
+  describe("test1", () => {
+    it("abc", () => {
+      const test = finiteStateMachineTest("1abc");
+
+      expect(test).toBe(true)
+    });
+  });
+})
