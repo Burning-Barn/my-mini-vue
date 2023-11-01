@@ -1,7 +1,9 @@
-export function transform(root, options) {
+export function transform(root, options={}) {
     const _context = createTransformContext(root, options)
     // 树结构遍历，1、深度优先搜索，---》递归   2、广度优先搜索
     traverseNode(root, _context)
+
+    root.codegenNode = root.children[0]
 }
 
 function traverseNode(root, context) {
