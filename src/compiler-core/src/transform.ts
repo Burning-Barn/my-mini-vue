@@ -1,9 +1,13 @@
+import { NodeTypes } from "./ast"
+import { TO_DISPLAY_STRING } from "./runtimeHelpers"
+
 export function transform(root, options={}) {
     const _context = createTransformContext(root, options)
     // 树结构遍历，1、深度优先搜索，---》递归   2、广度优先搜索
     traverseNode(root, _context)
 
     root.codegenNode = root.children[0]
+    root.helps = [..._context.helps.keys()]
 }
 
 function traverseNode(root, context) {
@@ -18,8 +22,19 @@ function traverseNode(root, context) {
         }
     }
 
-    // 变动点与稳定点分离，将稳定点分离成单独函数，保证可测试性。
-    traverseChildren(root, context)
+    switch (root.type) {
+        case NodeTypes.INTERPOLATION:
+            context.help(TO_DISPLAY_STRING)
+            break
+        case NodeTypes.ELEMENT:
+        case NodeTypes.ROOT:
+            // 变动点与稳定点分离，将稳定点分离成单独函数，保证可测试性。
+            traverseChildren(root, context)
+            break;
+        default:
+            break;
+    }
+
 }
 
 function traverseChildren(root, context) {
@@ -34,8 +49,13 @@ function traverseChildren(root, context) {
 }
 
 function createTransformContext(root, options) {
-    return {
+    const context = {
         root,
-        nodeTransforms: options.nodeTransforms || []
+        nodeTransforms: options.nodeTransforms || [],
+        helps: new Map(),
+        help(key) {
+            context.helps.set(key, 1)
+        }
     }
+    return context
 }

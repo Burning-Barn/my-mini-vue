@@ -162,12 +162,14 @@ function parseInterpolation(_context) {
 
 function createRoot(children) {
   return {
-    children
+    children,
+    type: NodeTypes.ROOT
   }
 }
 
 function createParseContext(content) {
   return {
-    source: content
+    source: content,
+    type: NodeTypes.ROOT
   }
 }
