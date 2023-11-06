@@ -6,7 +6,12 @@ export function transform(root, options={}) {
     // 树结构遍历，1、深度优先搜索，---》递归   2、广度优先搜索
     traverseNode(root, _context)
 
-    root.codegenNode = root.children[0]
+    const child = root.children[0]
+    if(child.type === NodeTypes.ELEMENT) {
+        root.codegenNode = child.codegenNode
+    } else {
+        root.codegenNode = root.children[0]
+    }
     root.helps = [..._context.helps.keys()]
 }
 
@@ -18,7 +23,7 @@ function traverseNode(root, context) {
     if(_nodeTransforms) {
         for (let i = 0; i < _nodeTransforms.length; i++) {
             const _nodeTransform = _nodeTransforms[i];
-            _nodeTransform(root) 
+            _nodeTransform(root, context) 
         }
     }
 

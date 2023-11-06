@@ -5,7 +5,7 @@
 // }
 
 import { NodeTypes } from "./ast"
-import { TO_DISPLAY_STRING, helperMapName } from "./runtimeHelpers"
+import { CREATE_ELEMENT_VNODE, TO_DISPLAY_STRING, helperMapName } from "./runtimeHelpers"
 
 `
 "const { toDisplayString:_toDisplayString } = Vue
@@ -25,6 +25,7 @@ export function generate(ast) {
     push(`function ${_functionName}(${_signature}) {`)
     push(`return `)
     getNode(ast.codegenNode, _context)
+    // console.log('ast.codegenNode ===>', ast.codegenNode)
     push(`}`)
 
     return  {
@@ -60,9 +61,50 @@ function getNode(node, _context) {
         case NodeTypes.SIMPLE_EXPRESSION:
             genSimpleExpression(node, _context)
             break
+        case NodeTypes.ELEMENT:
+            genElement(node, _context)
+            break
+        case NodeTypes.COMPOUND_EXPRESSION:
+            COMPOUND_EXPRESSION(node, _context)
+            break
         default:
             break;
     }
+}
+
+function COMPOUND_EXPRESSION(node, context) {
+    const { push } = context;
+    const { tag, children } = node;
+    for (let i = 0; i < children.length; i++) {
+        const _child = children[i];
+        if(typeof _child === 'string') {
+            push(_child)
+        } else {
+            getNode(_child, context)
+        }
+    }
+}
+
+function genElement(node, context) {
+    const { push } = context;
+    const { tag, children } = node;
+    // push(`${context.help(CREATE_ELEMENT_VNODE)}("${tag}"), null, "hi, " + _toDisplayString(_ctx.message)`)
+    push(`${context.help(CREATE_ELEMENT_VNODE)}('${tag}', null, `)
+    // console.log('!!node ===>', node)
+    // console.log('!!children ===>', children)
+
+    // 适配当前"<div>hi,{{message}}</div>" 简写
+    // for (let i = 0; i < children.length; i++) {
+    //     const _child = children[i];
+    //     getNode(_child, context)
+    // }
+
+    // const _child = children[0]
+    // getNode(_child, context)
+
+    getNode(children, context)
+
+    push(')')
 }
 
 function genSimpleExpression(node, context) {
