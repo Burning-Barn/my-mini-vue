@@ -6,7 +6,7 @@ import { registerCompiler } from './runtime-core/component.js'
 import * as runtime_core from './runtime-dom/index'
 
 export * from './runtime-dom/index'
-export * from './reactivity/index'
+// export * from './reactivity/index'
 
 
 function compileToFunction(template) {
