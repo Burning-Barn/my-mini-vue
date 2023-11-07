@@ -19,11 +19,13 @@ function traverseNode(root, context) {
     console.log('root', root)
 
     // 插件体系
+    let _handleFuc: any = []
     const _nodeTransforms = context.nodeTransforms
     if(_nodeTransforms) {
         for (let i = 0; i < _nodeTransforms.length; i++) {
             const _nodeTransform = _nodeTransforms[i];
-            _nodeTransform(root, context) 
+            let onExit = _nodeTransform(root, context) 
+            _handleFuc.push(onExit)
         }
     }
 
@@ -38,6 +40,11 @@ function traverseNode(root, context) {
             break;
         default:
             break;
+    }
+
+    let _len = _handleFuc.length
+    while(_len--) {
+        _handleFuc[_len]?.()
     }
 
 }

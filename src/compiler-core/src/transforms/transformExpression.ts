@@ -1,15 +1,17 @@
 import { NodeTypes } from "../ast";
 
 export function transformExpression(node) {
-  switch (node.type) {
-    case NodeTypes.INTERPOLATION:
-      // _ctx.${node.content}
-      node.content.content = `_ctx.${node.content.content}`
-      // node.content = processExpression(node.content)
-      break;
-  
-    default:
-      break;
+  return () => {
+    switch (node.type) {
+      case NodeTypes.INTERPOLATION:
+        // _ctx.${node.content}
+        node.content.content = `_ctx.${node.content.content}`
+        // node.content = processExpression(node.content)
+        break;
+    
+      default:
+        break;
+    }
   }
 }
 

@@ -87,9 +87,9 @@ function COMPOUND_EXPRESSION(node, context) {
 
 function genElement(node, context) {
     const { push } = context;
-    const { tag, children } = node;
+    const { tag, children, props } = node;
     // push(`${context.help(CREATE_ELEMENT_VNODE)}("${tag}"), null, "hi, " + _toDisplayString(_ctx.message)`)
-    push(`${context.help(CREATE_ELEMENT_VNODE)}('${tag}', null, `)
+    push(`${context.help(CREATE_ELEMENT_VNODE)}('${tag}', ${props || null}, `)
     // console.log('!!node ===>', node)
     // console.log('!!children ===>', children)
 
@@ -101,6 +101,8 @@ function genElement(node, context) {
 
     // const _child = children[0]
     // getNode(_child, context)
+
+
 
     getNode(children, context)
 
