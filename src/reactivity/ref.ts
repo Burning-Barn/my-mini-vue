@@ -72,6 +72,20 @@ export function proxyRefs(raw) {
             } else {
                 return Reflect.set(target, key, value)
             }
-        }
+        },
+        // set(target, key, value) {
+        //     let _res 
+        //     if(isRef(target[key])) {
+        //         if(isRef(value)) {
+        //             return target[key].value = value.value
+        //         } else {
+        //             return target[key].value = value
+        //         }
+        //     } else {
+        //         _res = Reflect.set(target, key, value)
+        //     }
+
+        //     return _res
+        // }
     })
 }
