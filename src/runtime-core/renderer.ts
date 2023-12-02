@@ -304,7 +304,7 @@ export function createRenderer(option) {
 
                 if(_newIndexToOldIndexMap[s - i] === 0) {
                     // 等于0 即 初始化的0，即 遍历旧节点没有赋值，即，为新增节点
-                    patch(null, children[s], container, parent, _anthor.el)
+                    patch(null, children[s], container, parent, _anthor?.el)
                 } else {
                     // 不等于0，看是不是为稳定序列，不是稳定序列移动
                     if(s - i !== _increasingNewIndexSequence[_sequenceIndex]) {
